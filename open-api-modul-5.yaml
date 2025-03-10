@@ -1,0 +1,198 @@
+openapi: 3.0.3
+info:
+  title: API для управления товарами
+  description: API от Абросимовой М.А. для выполнения ДЗ по модулю 5
+  contact:
+    name: Абросимова Мария
+    email: enina.marija@mail.ru
+  version: 1.0.0
+servers:
+  - url: https://api.example.com/v1
+    description: Основной сервер
+tags:
+  - name: product
+    description: Товары онлайн-магазина
+
+paths:
+
+  /products:
+
+    get:
+      tags:
+        - product
+      summary: Получить список всех товаров
+      description: Получить список всех товаров онлайн-магазина
+      operationId: getProducts
+      responses:
+        '200':
+          description: "Успешный ответ"
+          content:
+            application/json:
+              schema:
+                type: "object"
+                properties:
+                  data:
+                    type: "array"
+                    items:
+                      $ref: '#/components/schemas/Product'
+        '404':
+          description: "Страница не найдена"
+        '500':
+          description: "Сервер недоступен"
+
+    post:
+      tags:
+        - product
+      summary: Создать новый товар
+      description: Создать новый товар для онлайн-магазина
+      operationId: createProducts
+      requestBody:
+        description: Создать новый товар
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateProduct'
+      responses:
+        '200':
+          description: "Успешный ответ"
+        '404':
+          description: "Страница не найдена"
+        '500':
+          description: "Сервер недоступен"
+
+
+  /products/{productId}:
+
+    get:
+      tags:
+        - product
+      summary: Получить информацию о товаре по его id
+      description: Получить информацию о товаре по его id из онлайн-магазина
+      operationId: getProductById
+      parameters:
+        - name: "productId"
+          in: "path"
+          description: "ID товара"
+          required: true
+          schema:
+            $ref: '#/components/schemas/ProductId'
+      responses:
+        '200':
+          description: "Успешный ответ"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ProductDetails"
+        '404':
+          description: "Страница не найдена"
+        '500':
+          description: "Сервер недоступен"
+
+    patch:
+      tags:
+        - product
+      summary: Обновить информацию о товаре по его id
+      description: Обновить информацию о товаре по его id в онлайн-магазине
+      operationId: updateProductById
+      parameters:
+        - name: "productId"
+          in: "path"
+          description: "ID товара"
+          required: true
+          schema:
+            $ref: '#/components/schemas/ProductId'
+      requestBody:
+        description: Обновить товар
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateProduct'
+        
+      responses:
+        '200':
+          description: "Успешный ответ"
+        '404':
+          description: "Страница не найдена"
+        '500':
+          description: "Сервер недоступен"
+
+    delete:
+      tags:
+        - product
+      summary: Удалить товар
+      description: Удалить товар по его id из онлайн-магазина
+      operationId: deleteProductById
+      parameters:
+        - name: "productId"
+          in: "path"
+          description: "ID товара"
+          required: true
+          schema:
+            $ref: '#/components/schemas/ProductId'
+      responses:
+        '200':
+          description: "Успешный ответ"
+        '404':
+          description: "Страница не найдена"
+        '500':
+          description: "Сервер недоступен"
+
+components:
+  schemas:
+    Product:
+      type: object
+      properties:
+        id:
+          type: integer
+          example: 10
+        name:
+          type: string
+          example: "Носки"
+        price:
+          type: number
+          format: decimal
+          example: 100.50
+        imageURL:
+          type: string
+          example: "https://ya.ru/image1.jpeg"
+
+    ProductId:
+      type: integer
+      example: 123
+
+    ProductDetails:
+      type: object
+      properties:
+        id:
+          type: integer
+          example: 10
+        name:
+          type: string
+          example: "Носки"
+        description:
+          type: string
+          example: "Самые лучшие носки на свете"
+        price:
+          type: number
+          format: decimal
+          example: 100.50
+        imageURL:
+          type: string
+          example: "https://ya.ru/image1.jpeg"
+
+    CreateProduct:
+      type: object
+      properties:
+        name:
+          type: string
+          example: "Носки"
+        description:
+          type: string
+          example: "Самые лучшие носки на свете"
+        price:
+          type: number
+          format: decimal
+          example: 100.50
+        imageURL:
+          type: string
+          example: "https://ya.ru/image1.jpeg"
