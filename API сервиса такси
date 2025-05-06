@@ -1,0 +1,230 @@
+openapi: 3.1.0
+
+info:
+  title: API сервиса такси
+  description: Заказ такси и поиск водителей
+  contact:
+    name: Абросимова Мария
+    email: enina.marija@mail.ru
+  version: 1.0.0
+
+tags:
+  - name: addresses
+    description: Адреса назначения
+  - name: orders
+    description: Управление заказами
+
+servers:
+  - url: https://api.example.com/v1
+    description: Основной сервер
+
+
+paths:
+
+  /addresses/estimate:
+
+    get:
+      tags:
+        - addresses
+      summary: Получить оценку поездки по адресу назначения
+      description: Возвращает расчет стоимости, количество машин поблизости, расстояние, время поездки и ожидания.
+      operationId: getEstimateByAddress
+      parameters:
+        - name: destination
+          in: query
+          description: Адрес назначения
+          required: true
+          schema:
+            $ref: '#/components/schemas/Address'
+      responses:
+        '200':
+          description: Успешный ответ с данными о поездке
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EstimateByAddress'
+        '404':
+          description: Страница не найдена
+        '500':
+          description: Сервер недоступен
+
+  /order:
+
+    post:
+      tags:
+        - orders
+      summary: Создать новый заказ
+      description: Создание заказа с указанием адреса и типа авто
+      operationId: createOrders
+      requestBody:
+        description: Создать новый заказ
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/OrderCreateRequest'
+      responses:
+        '201':
+          description: Заказ успешно создан
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OrderResponse'
+        '404':
+         description: Страница не найдена
+        '500':
+         description: Сервер недоступен
+
+
+  /order/{orderId}:
+
+    get:
+      tags:
+        - orders
+      summary: Получить информацию о заказе по его id
+      description: Получить детали заказа по id
+      operationId: getOrderById
+      parameters:
+        - name: orderId
+          in: path
+          description: ID заказа
+          required: true
+          schema:
+            $ref: '#/components/schemas/OrderId'
+      responses:
+        '200':
+          description: Успешный ответ
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OrderResponse'
+        '404':
+          description: Страница не найдена
+        '500':
+          description: Сервер недоступен
+
+    delete:
+      tags:
+        - orders
+      summary: Отменить заказ по его id
+      description: Отмена активного заказа по id
+      operationId: deleteOrdersById
+      parameters:
+        - name: orderId
+          in: path
+          description: ID заказа
+          required: true
+          schema:
+            $ref: '#/components/schemas/OrderId'
+      responses:
+        '204':
+          description: Нет содержимого
+        '404':
+          description: Страница не найдена
+        '500':
+          description: Сервер недоступен
+
+
+
+components:
+  schemas:
+
+    OrderId:           # Пример идентификатора из целых чисел
+      description: ID заказа
+      type: integer
+      format: int64
+      exclusiveMinimum: 0  # Значение должно быть > 0 (1, 2, 3...)
+      example: 596
+
+    Address:
+      description: Адрес
+      type: string
+      example: "Россия, Москва, ул. Ленина, 15"
+
+    Car_type:
+      type: string
+      enum: [ economy, comfort, business, premium ]
+      description: Класс автомобиля
+
+    Estimated_cost:
+      description: Расчетная стоимость поездки
+      type: number
+      exclusiveMinimum: 0  # Значение должно быть > 0 (1, 2, 3...)
+      example: 350.5
+
+    Status:
+      description: Статус заказа
+      type: string
+      enum: [ created, in_progress, cancelled, completed ]
+
+    EstimateByAddress:
+      type: object
+      properties:
+        estimated_cost:
+          $ref: '#/components/schemas/Estimated_cost'
+        available_cars:
+          type: integer
+          description: Количество доступных машин поблизости
+          example: 5
+          exclusiveMinimum: 0  # Значение должно быть > 0 (1, 2, 3...)
+        distance:
+          type: number
+          description: Расстояние до пункта назначения (км)
+          example: 12.3
+          exclusiveMinimum: 0  # Значение должно быть > 0 (1, 2, 3...)
+        travel_time:
+          type: number
+          description: Предполагаемое время поездки (минуты)
+          example: 35
+          exclusiveMinimum: 0  # Значение должно быть > 0 (1, 2, 3...)
+        waiting_time:
+          type: number
+          description: Среднее время подачи машины (минуты)
+          example: 7
+          exclusiveMinimum: 0  # Значение должно быть > 0 (1, 2, 3...)
+      required:
+        - estimated_cost
+        - available_cars
+        - distance
+        - travel_time
+
+    OrderCreateRequest:
+      type: object
+      properties:
+        destination:
+          description: Адрес назначения
+          $ref: '#/components/schemas/Address'
+        car_type:
+          $ref: '#/components/schemas/Car_type'
+        source_address:
+          description: Адрес отправления
+          $ref: '#/components/schemas/Address'
+      required:
+        - destination
+        - car_type
+        - source_address
+
+    OrderResponse:
+      type: object
+      properties:
+        order_id:
+          $ref: '#/components/schemas/OrderId'
+        status:
+          $ref: '#/components/schemas/Status'
+        destination:
+          description: Адрес назначения
+          $ref: '#/components/schemas/Address'
+        car_type:
+          $ref: '#/components/schemas/Car_type'
+        estimated_cost:
+          $ref: '#/components/schemas/Estimated_cost'
+        created_at:
+          description: Дата/время создания заказа
+          type: string
+          format: date-time
+      required:
+        - order_id
+        - status
+        - destination
+        - car_type
+        - estimated_cost
+        - created_at
